@@ -51,6 +51,7 @@ public interface MessageListener {
 	 * @param firstDelivery Was the target node final destination of the message
 	 * and received this message for the first time.
 	 */
+	//如果目的节点是消息的最终目的节点；同时目的主机是第一次接收该消息时，firstDelivery设置为true
 	public void messageTransferred(Message m, DTNHost from, DTNHost to,
 			boolean firstDelivery);
 }

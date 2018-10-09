@@ -16,38 +16,42 @@ import java.util.Set;
 public class Message implements Comparable<Message> {
 	/** Value for infinite TTL of message */
 	public static final int INFINITE_TTL = -1;
-	private DTNHost from;
-	private DTNHost to;
+   /** Next unique identifier to be given */
+    private static int nextUniqueId;//全局变量。用于保存下一次产生消息的消息id
+	private DTNHost from;//源主机
+	private DTNHost to;//目的主机
 	/** Identifier of the message */
-	private String id;
+	private String id;//消息id(String):不如叫消息的名字吧，非独一无二
 	/** Size of the message (bytes) */
-	private int size;
+	private int size;//消息大小
 	/** List of nodes this message has passed */
-	private List<DTNHost> path;
-	/** Next unique identifier to be given */
-	private static int nextUniqueId;
+	private List<DTNHost> path;//消息经过的主机路径
+	
+
 	/** Unique ID of this message */
-	private int uniqueId;
+	private int uniqueId;//消息独一无二的id
 	/** The time this message was received */
-	private double timeReceived;
+	private double timeReceived;//消息被接收的时间
 	/** The time when this message was created */
-	private double timeCreated;
+	private double timeCreated;//消息被创建的时间
 	/** Initial TTL of the message */
-	private int initTtl;
+	private int initTtl;//消息的初始化ttl
 
 	/** if a response to this message is required, this is the size of the
 	 * response message (or 0 if no response is requested) */
-	private int responseSize;
+	//如果该消息从源主机发送到目的主机；该消息需要从目的主机返回一个响应消息；responseSize就是该响应消息的大小
+	private int responseSize;//响应消息的大小
+	//如果该消息是一个响应消息；那么该私有变量就把其对应的请求消息
 	/** if this message is a response message, this is set to the request msg*/
-	private Message requestMsg;
+	private Message requestMsg;//请求消息
 
 	/** Container for generic message properties. Note that all values
 	 * stored in the properties should be immutable because only a shallow
 	 * copy of the properties is made when replicating messages */
-	private Map<String, Object> properties;
+	private Map<String, Object> properties;//属性
 
 	/** Application ID of the application that created the message */
-	private String	appID;
+	private String	appID;//创建该消息的应用的appId(String)
 
 	static {
 		reset();
@@ -102,6 +106,7 @@ public class Message implements Comparable<Message> {
 	 * Returns the ID of the message
 	 * @return The message id
 	 */
+	//返回消息的名称（非独一无二的id）
 	public String getId() {
 		return this.id;
 	}

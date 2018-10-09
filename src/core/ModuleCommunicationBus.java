@@ -14,12 +14,16 @@ import java.util.List;
  * This is fairly similar to Message class' property interface, but these
  * values are shared for a node instead of message.
  */
+//模块间的通信总线
 public class ModuleCommunicationBus {
 	/** Initial capacity for the listener lists (instead of 10) */
 	private static int INIT_CAPACITY = 3;
 	/** The values in the blackboard (or null if none)*/
 	private HashMap<String, Object> values;
 	/** Subscribed listeners (or null if none)*/
+	//listeners本质上用来监听ModuleCommunicationBus对象中的私有成员HashMap<String, Object> values中
+	//key值的变化；这两个HashMap的key值是通过名称来对应的，当values中某个key对应的值发生了变化
+	//就通过相同的key去listeners中找List<ModuleCommunicationListener>，然后遍历所有的监听器
 	private HashMap<String, List<ModuleCommunicationListener>> listeners;
 
 	/**

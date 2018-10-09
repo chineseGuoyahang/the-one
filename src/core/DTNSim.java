@@ -39,32 +39,50 @@ public class DTNSim {
 	 * settings files (if given) is the run index to use for that run.
 	 * @param args Command line arguments
 	 */
+	
+	/**
+	    * 命令行格式 : one.sh [ -b runcount ] [ conf-files ]
+	 * -b : 表示不使用GUI模式仿真
+	 * runcount : 表示运行次数
+	 * conf-files : 表示用户特定的配置文件名  若省略则使用默认的配置文件default_settings.txt
+	 * 
+	 * @param args
+	 */
+	
 	public static void main(String[] args) {
-		boolean batchMode = false;
-		int nrofRuns[] = {0,1};
-		String confFiles[];
-		int firstConfIndex = 0;
-		int guiIndex = 0;
-
+		boolean batchMode = false;//用于判断仿真器是以TEXT方式运行还是以GUI的方式运行
+		String confFiles[];//等价于命令行后面的一大堆参数
+		int firstConfIndex = 0;//第一个配置文件的下标
+		int guiIndex = 0;//不知道干嘛用的，应该是和nrofRuns有着相同的作用
+		int nrofRuns[] = {0,1};//暂时未从源码看出其作用，应该是和guiIndex有着相同的作用
+		/**
+		 * 这里的guiIndex与nrofRuns看起来像是给每个运行的进程一个名字
+		 * 如开启一个GUI。这个GUI的Setting.index=guiIndex
+		 */
 		/* set US locale to parse decimals in consistent way */
 		java.util.Locale.setDefault(java.util.Locale.US);
 
 		if (args.length > 0) {
 			if (args[0].equals(BATCH_MODE_FLAG)) {
+			    /*不使用GUI模式*/
 				batchMode = true;
+				//one.sh  -b 这种命令行输入方式
                 if (args.length == 1) {
                     firstConfIndex = 1;
                 }
                 else {
+                   // one.sh  -b 5 [configFile] 这种命令行输入方式
                     nrofRuns = parseNrofRuns(args[1]);
                     firstConfIndex = 2;
                 }
 			}
 			else { /* GUI mode */
 				try { /* is there a run index for the GUI mode ? */
+				  //one.sh  5 [configFile] 这种命令行输入方式
 					guiIndex = Integer.parseInt(args[0]);
 					firstConfIndex = 1;
 				} catch (NumberFormatException e) {
+				  //one.sh  [configFile] 这种命令行输入方式
 					firstConfIndex = 0;
 				}
 			}
@@ -94,13 +112,18 @@ public class DTNSim {
 	}
 
 	/**
+	 * 根据confFiles与firstIndex进行加载配置文件
+	 * 其中firstIndex为confFiles中第一个配置文件下标的索引
+	 * 如果加载配置文件出错，那么就进行判断命令行是否把运行索引写错了位置
+	 *     如果Integer.parseInt(confFiles[i])转成整数成功，那么就提示命令行中运行索引写错了位置
+	 *     “运行索引只能位于第一个位置或者-b之后”
 	 * Initializes Settings
 	 * @param confFiles File name paths where to read additional settings
 	 * @param firstIndex Index of the first config file name
 	 */
 	private static void initSettings(String[] confFiles, int firstIndex) {
 		int i = firstIndex;
-
+		//此处判断是判断是 否命令行参数没有写配置文件，直接返回
         if (i >= confFiles.length) {
             return;
         }
@@ -140,6 +163,8 @@ public class DTNSim {
 	 * @param className Full name (i.e., containing the packet path)
 	 * of the class to register. For example: <code>core.SimClock</code>
 	 */
+	//假设有场景1，那么场景1的创建就会把相关类的静态变量更改
+	//此时另开一个场景2，场景2与场景1相互独立，那么就需要把场景1更改的变量全部改为默认值，该方法就是把需要更改的类放入一个list
 	public static void registerForReset(String className) {
 		Class<?> c = null;
 		try {
@@ -162,6 +187,7 @@ public class DTNSim {
 	/**
 	 * Resets all registered classes.
 	 */
+	//把上面所讲的list进行遍历并还原默认值
 	private static void resetForNextRun() {
 		for (Class<?> c : resetList) {
 			try {
@@ -177,7 +203,15 @@ public class DTNSim {
 
 	/**
 	 * Parses the number of runs, and an optional starting run index, from a
-	 * command line argument
+	 * command line argument 
+	 * 
+	 * 从命令行参数中解析出运行次数和可选的开始运行的索引
+	 * 命令行格式 : one.sh [ -b runcount ] [ conf-files ]
+	 * arg就是命令行中的runcount
+	 * 此处可以看出runcount有两种写法
+	 *     2:3 此时val=[2,3];
+	 *     3 此时val=[0,3];
+	 * 
 	 * @param arg The argument to parse
 	 * @return The first and (last_run_index - 1) in an array
 	 */

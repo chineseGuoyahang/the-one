@@ -19,25 +19,26 @@ import static core.Constants.DEBUG;
  * A DTN capable host.
  */
 public class DTNHost implements Comparable<DTNHost> {
-	private static int nextAddress = 0;
-	private int address;
+    private static int nextAddress = 0;//这是全局变量，用于保存下一次产生主机时，赋给主机的地址
+    private int address;//该主机的网络地址
 
-	private Coord location; 	// where is the host
-	private Coord destination;	// where is it going
+    private Coord location; //该主机的坐标对象；通过移动模型的方法给出的坐标
+    private Coord destination;  //该主机的目的坐标对象
 
-	private MessageRouter router;
-	private MovementModel movement;
-	private Path path;
-	private double speed;
-	private double nextTimeToMove;
-	private String name;
-	private List<MessageListener> msgListeners;
-	private List<MovementListener> movListeners;
-	private List<NetworkInterface> net;
-	private ModuleCommunicationBus comBus;
-
+    private MessageRouter router;//该主机的消息路由对象
+    private MovementModel movement;//该主机的移动模型对象
+    private Path path;//该主机的路径
+    private double speed;//该主机的移动速度
+    private double nextTimeToMove;//该主机下次移动的时间：通过移动模型给出的时间
+    private String name;//该主机的名字
+    private List<MessageListener> msgListeners;//该主机的消息监听器列表
+    private List<MovementListener> movListeners;//该主机的移动监听器列表
+    private List<NetworkInterface> net;//该主机的网络接口对象列表
+    private ModuleCommunicationBus comBus;//该主机的模块通信主线
+    //该静态代码的作用：在jvm加载该类时，将该类放到一个列表内（resetList）这个列表内存放了所有可以被重置的类
 	static {
 		DTNSim.registerForReset(DTNHost.class.getCanonicalName());
+		//每次jvm加载该类时，自动将全局变量：nextAddress设置为0；
 		reset();
 	}
 	/**
@@ -50,6 +51,12 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * @param mmProto Prototype of the movement model of this host
 	 * @param mRouterProto Prototype of the message router of this host
 	 */
+	//msgLs:直接赋值
+	//movLs:直接赋值
+	//interf:拷贝赋值
+	//comBus:直接赋值
+	//mmProto:拷贝赋值
+	//mRouterProto:拷贝赋值
 	public DTNHost(List<MessageListener> msgLs,
 			List<MovementListener> movLs,
 			String groupId, List<NetworkInterface> interf,
