@@ -54,7 +54,7 @@ abstract public class NetworkInterface implements ModuleCommunicationListener {
 
 	protected String interfacetype;
 	protected List<Connection> connections; // connected hosts
-	private List<ConnectionListener> cListeners = null; // list of listeners
+	private List<ConnectionListener> cListeners = null; // list of listeners//该 List<ConnectionListener>与场景中的 List<ConnectionListener>是同一个
 	private int address; // network interface address
 	protected double transmitRange;
 	protected double oldTransmitRange;

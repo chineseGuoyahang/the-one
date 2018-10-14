@@ -43,18 +43,25 @@ public class Settings {
 	 * ({@value}. If set to an empty string, standard output is used.
 	 * By default setting are not written anywhere.
 	 */
+	//Settings.output="filePath";如果在配置文件内不配置Settings.output，默认out=system.out
+	  //如果配制了Settings.output，out = 文件
 	public static final String SETTING_OUTPUT_S = "Settings.output";
-
+   /** Stream where all read settings are written to */
+    private static PrintStream out = null;
 	/** delimiter for requested values in strings ({@value})
 	 * @see #valueFillString(String) */
 	public static final String FILL_DELIMITER = "%%";
 
-	/** Stream where all read settings are written to */
-	private static PrintStream out = null;
+
 	private static Set<String> writtenSettings = new HashSet<String>();
 
 	/** run index for run-specific settings */
 	private static int runIndex = 0;
+	//为啥要有两个命名空间呢？
+	//Group.movementModel = ShortestPathMapBasedMovement
+	//Group4.movementModel = MapRouteMovement
+	//就是为了解决上述情况，如果namespace=Group4，且刚好在Group4内找到了对应信息，那么就不在向Group内去寻找
+	//否则去secondaryNamespace(Group)去寻找
 	private String namespace = null; // namespace to look the settings from
 	private String secondaryNamespace = null;
 	private Stack<String> oldNamespaces;
@@ -243,6 +250,7 @@ public class Settings {
 	 * are read from or null if no additional settings files are needed.
 	 * @throws SettingsError If loading the settings file(s) didn't succeed
 	 */
+	//该init函数就只是初始化的输出位置out = System.out或者out = new PrintStream(new File(outFile));
 	public static void init(String propFile) throws SettingsError {
 		String outFile;
 		try {
@@ -317,6 +325,7 @@ public class Settings {
 	 * @throws SettingsError If loading the settings file didn't succeed
 	 * @see #init(String)
 	 */
+	//主要在DTNSim.java的main函数中
 	public static void addSettings(String propFile) throws SettingsError {
 		try {
 			props.load(new FileInputStream(propFile));
@@ -366,6 +375,8 @@ public class Settings {
 	 * @param secondary If true, the secondary namespace is used.
 	 * @return full (prefixed with current namespace) property name for setting
 	 */
+	//如Scenario.simulateConnections；把simulateConnections当成参数name传入该函数
+	//返回一个完整的key值，该key值为setting文件中的key；如Scenario.simulateConnections=true
 	private String getFullPropertyName(String name, boolean secondary) {
 		String usedNamespace = (secondary ? secondaryNamespace : namespace);
 
@@ -713,6 +724,7 @@ public class Settings {
 	 * @param name Name of the setting to get
 	 * @return Value of the setting as an integer
 	 */
+	//如Scenario.nrofHostGroups = 6；传入nrofHostGroups会自动返回6
 	public int getInt(String name) {
 		return convertToInt(getDouble(name), name);
 	}

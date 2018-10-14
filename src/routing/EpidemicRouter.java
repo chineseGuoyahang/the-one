@@ -33,7 +33,9 @@ public class EpidemicRouter extends ActiveRouter {
 
 	@Override
 	public void update() {
+	    //垃圾消息处理
 		super.update();
+		//传输消息
 		if (isTransferring() || !canStartTransfer()) {
 			return; // transferring, don't try other connections yet
 		}

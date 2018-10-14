@@ -28,10 +28,13 @@ import core.SimClock;
  * {@link #getNextMessageToRemove(boolean)}) and watching of sending connections (see
  * {@link #update()}).
  */
+//主动路由
 public abstract class ActiveRouter extends MessageRouter {
 	/** Delete delivered messages -setting id ({@value}). Boolean valued.
 	 * If set to true and final recipient of a message rejects it because it
 	 * already has it, the message is deleted from buffer. Default=false. */
+    //是否删除已经投递成功的消息，bool值
+    //若为true，当消息的终端主机已经接受过了该消息，就把该消息删除，默认为false
 	public static final String DELETE_DELIVERED_S = "deleteDelivered";
 	/** should messages that final recipient marks as delivered be deleted
 	 * from message buffer */
@@ -40,10 +43,13 @@ public abstract class ActiveRouter extends MessageRouter {
 	/** prefix of all response message IDs */
 	public static final String RESPONSE_PREFIX = "R_";
 	/** how often TTL check (discarding old messages) is performed */
+	//多久检查一次ttl（丢弃oldmessage）
 	public static int TTL_CHECK_INTERVAL = 60;
 	/** connection(s) that are currently used for sending */
+	//由"当前被用来发送消息的连接"组成的列表
 	protected ArrayList<Connection> sendingConnections;
 	/** sim time when the last TTL check was done */
+	//最后一次进行ttl检查的时间
 	private double lastTtlCheck;
 
 	private MessageTransferAcceptPolicy policy;
@@ -100,6 +106,10 @@ public abstract class ActiveRouter extends MessageRouter {
 	}
 
 	@Override
+	//请求投递消息
+	//如果当前路由模块正在传输，则返回fasle，请求传输失败
+	//否则：就从自己的待发送消息列表中找到目的主机为"连接的对端主机"的消息，进行发送，返回true，请求传输成功
+	//其他情况，返回false，请求传输失败
 	public boolean requestDeliverableMessages(Connection con) {
 		if (isTransferring()) {
 			return false;
@@ -121,12 +131,21 @@ public abstract class ActiveRouter extends MessageRouter {
 	}
 
 	@Override
+	//给实现类改写makeRoomForNewMessage方法，以实现对应的解决策略
+	/**
+	 * 传递一个消息对象：m
+	 * 然后进行判断，路由模块存放"待发送消息列表"的内存大小是否足够，若是消息本身的大小超过了整个内存的大小，此时返回false，此时理论上应该不再创建消息，但是makeRoomForNewMessage该函数并未进行判断
+	 *                                                       否则就清理之前存储的消息，直到剩余内存能够容纳新的消息
+	 * 
+	 * 
+	 */
 	public boolean createNewMessage(Message m) {
 		makeRoomForNewMessage(m.getSize());
 		return super.createNewMessage(m);
 	}
 
 	@Override
+	//即使ttl已经耗尽了，但是该消息已经可以传输到目的主机，此时这种情况也允许把消息接受存入缓存区
 	public int receiveMessage(Message m, DTNHost from) {
 		int recvCheck = checkReceiving(m, from);
 		if (recvCheck != RCV_OK) {
@@ -139,6 +158,7 @@ public abstract class ActiveRouter extends MessageRouter {
 
 	@Override
 	public Message messageTransferred(String id, DTNHost from) {
+	    //把缓存区的消息取出存入到内存区
 		Message m = super.messageTransferred(id, from);
 
 		/**
@@ -147,6 +167,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		 *  to zero.
 		 */
 		// check if msg was for this host and a response was requested
+		//如果消息已传送到其目的主机，同时该消息需要目的主机给源主机一个响应消息
 		if (m.getTo() == getHost() && m.getResponseSize() > 0) {
 			// generate a response message
 			Message res = new Message(this.getHost(),m.getFrom(),
@@ -174,6 +195,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return the value returned by
 	 * {@link Connection#startTransfer(DTNHost, Message)}
 	 */
+	//尝试使用指定的Connection开始传输信息，
+	//如果开始成功，则将该Connection对象加入到sendingConnections集合内
 	protected int startTransfer(Message m, Connection con) {
 		int retVal;
 
@@ -227,6 +250,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * this router (as final recipient), or DENIED_NO_SPACE if the message
 	 * does not fit into buffer
 	 */
+	//即使ttl已经耗尽了，但是该消息已经可以传输到目的主机，此时这种情况也允许把消息接受存入缓存区
+	//关于消息的接受与否，各种检查，可以在该函数自己写
 	protected int checkReceiving(Message m, DTNHost from) {
 		if (isTransferring()) {
 			return TRY_LATER_BUSY; // only one connection at a time
@@ -236,7 +261,7 @@ public abstract class ActiveRouter extends MessageRouter {
 				super.isBlacklistedMessage(m.getId())) {
 			return DENIED_OLD; // already seen this message -> reject it
 		}
-
+		//这里说明，即使ttl已经耗尽了，但是该消息已经可以传输到目的主机，此时这种情况也允许把消息接受存入缓存区
 		if (m.getTtl() <= 0 && m.getTo() != getHost()) {
 			/* TTL has expired and this host is not the final recipient */
 			return DENIED_TTL;
@@ -265,6 +290,9 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * transferred, the transfer is aborted before message is removed
 	 * @return True if enough space could be freed, false if not
 	 */
+	//这里应该可以优化，这里每次读取下一个消息并直接移除，如果可移除的消息全都删除掉，空间仍然不够，这就导致内存内的消息没了啊，新的消息也没加进去
+	//可以先判断可移除消息移除后，空间够不够，如果够则开始删除消息，如果不够，则不进行删除消息
+	//移除旧消息，但是不移除正在发送的消息
 	protected boolean makeRoomForMessage(int size){
 		if (size > this.getBufferSize()) {
 			return false; // message too big for the buffer
@@ -290,6 +318,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	/**
 	 * Drops messages whose TTL is less than zero.
 	 */
+	//遍历待发送消息列表，将ttl<=0 的消息delete掉
 	protected void dropExpiredMessages() {
 		Message[] messages = getMessageCollection().toArray(new Message[0]);
 		for (int i=0; i<messages.length; i++) {
@@ -322,6 +351,9 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * (no messages in buffer or all messages in buffer are being sent and
 	 * exludeMsgBeingSent is true)
 	 */
+	//从待发送消息的列表中，得到一个可以被删除的消息对象(为最早接收的消息对象，先进先出)
+	//若excludeMsgBeingSent=true，则不删除正在发送的消息
+	//否则，将正在传输的信息也考虑在可以被删除之列
 	protected Message getNextMessageToRemove(boolean excludeMsgBeingSent) {
 		Collection<Message> messages = this.getMessageCollection();
 		Message oldest = null;
@@ -347,6 +379,10 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * recipient is some host that we're connected to at the moment.
 	 * @return a list of message-connections tuples
 	 */
+	//得到一个Message---->Connection组成的List，
+	//假设现在建立了很多的连接
+	//获取目的主机为"Connection另一端的主机"的消息
+	//消息与其对应的Connection组成一个Tuple，多个Tuple组成List
 	protected List<Tuple<Message, Connection>> getMessagesForConnected() {
 		if (getNrofMessages() == 0 || getConnections().size() == 0) {
 			/* no messages -> empty list */
@@ -375,8 +411,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return The tuple whose connection accepted the message or null if
 	 * none of the connections accepted the message that was meant for them.
 	 */
-	protected Tuple<Message, Connection> tryMessagesForConnected(
-			List<Tuple<Message, Connection>> tuples) {
+	//从Message---->Connection组成的List中遍历，开始进行传输，如果有一个传输开始，则跳出循环，否则继续循环，如果都不能开始，则返回null
+	protected Tuple<Message, Connection> tryMessagesForConnected( List<Tuple<Message, Connection>> tuples) {
 		if (tuples.size() == 0) {
 			return null;
 		}
@@ -401,6 +437,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	  * @return The message whose transfer was started or null if no
 	  * transfer was started.
 	  */
+	//拿着路由模块中待发送消息列表分别尝试在一个特定的Connection中传输
 	protected Message tryAllMessages(Connection con, List<Message> messages) {
 		for (Message m : messages) {
 			int retVal = startTransfer(m, con);
@@ -426,6 +463,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return The connections that started a transfer or null if no connection
 	 * accepted a message.
 	 */
+	//List<Message>与List<Connection>进行矩阵遍历
 	protected Connection tryMessagesToConnections(List<Message> messages,
 			List<Connection> connections) {
 		for (int i=0, n=connections.size(); i<n; i++) {
@@ -447,6 +485,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return The connections that started a transfer or null if no connection
 	 * accepted a message.
 	 */
+	//List<Message>与List<Connection>进行矩阵遍历，只不过在遍历之前，根据配置文件中sendQueueMode的模式，重新组织List<Message>
 	protected Connection tryAllMessagesToAllConnections(){
 		List<Connection> connections = getConnections();
 		if (connections.size() == 0 || this.getNrofMessages() == 0) {
@@ -468,6 +507,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @return A connection that started a transfer or null if no transfer
 	 * was started
 	 */
+	//先检查本身的主机有没有可以发往对端主机的消息，如果有就返回Tuple<Message, Connection>
+	//如果没有看邻居节点的缓冲区是否有消息的目的节点是该节点，若是，尝试传输
 	protected Connection exchangeDeliverableMessages() {
 		List<Connection> connections = getConnections();
 
@@ -484,6 +525,7 @@ public abstract class ActiveRouter extends MessageRouter {
 		}
 
 		// didn't start transfer to any node -> ask messages from connected
+		 //如果没发送成功，看邻居节点的缓冲区是否有消息的目的节点是该节点，若是，尝试传输
 		for (Connection con : connections) {
 			if (con.getOtherNode(getHost()).requestDeliverableMessages(con)) {
 				return con;
@@ -499,6 +541,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * Shuffles a messages list so the messages are in random order.
 	 * @param messages The list to sort and shuffle
 	 */
+	//对待发送消息列表进行重新洗牌，以达到随机的效果
 	protected void shuffleMessages(List<Message> messages) {
 		if (messages.size() <= 1) {
 			return; // nothing to shuffle
@@ -514,6 +557,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @see #update()
 	 * @param con The connection to add
 	 */
+	//将一个"正在发送消息的连接"加入由"当前被用来发送消息的连接"组成的列表
 	protected void addToSendingConnections(Connection con) {
 		this.sendingConnections.add(con);
 	}
@@ -523,6 +567,8 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * some transfer has not been finalized.
 	 * @return true if this router is transferring something
 	 */
+	//如果当前路由模块正在传输或者当前路由模块已经不在传输了，但是还连接未准备好传输，则返回true，
+	//由此可见，一次只能有一个Connection传输数据
 	public boolean isTransferring() {
 		if (this.sendingConnections.size() > 0) {
 			return true; // sending something
@@ -550,6 +596,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * @param msgId The ID of the message
 	 * @return True if the message is being sent false if not
 	 */
+	//判断当前路由模块是否正在发送消息
 	public boolean isSending(String msgId) {
 		for (Connection con : this.sendingConnections) {
 			if (con.getMessage() == null) {
@@ -567,6 +614,7 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * enabled OR (is enabled and model has energy left))
 	 * @return has the node energy
 	 */
+	//判断当前路由模块是否还有能量剩余
 	public boolean hasEnergy() {
 		return this.energy == null || this.energy.getEnergy() > 0;
 	}
@@ -577,10 +625,21 @@ public abstract class ActiveRouter extends MessageRouter {
 	 * whose TTL <= 0 (checking every one simulated minute).
 	 * @see #addToSendingConnections(Connection)
 	 */
+	//检查所有connections是否完成准备好的发送，并且丢弃掉连接关闭的，丢弃掉TTL小于0的message。（理论上可以有很多个发送connections，但现在所有的routers只能支持一个发送connection。）
+
+	//遍历sendingConnections中所有元素如果message传递完成（isTransferred），
+	//如果connection中的message没有被丢弃，那么调用transferDone(Connection)（子类中可以重写这个函数）
+	//和finalizeTransfer()（用于完成目前被传递的message的传递，调用这个函数之后，这个message在这个connection中就查询不到了）完成本次传递。
+	//如果connection关闭，移除这个connection。
+	//如果发送后message依然把持缓存，将其释放，
+	//最后将满足移除条件的connection从sendingConnections中移除，
+	//若不满足条件，继续遍历下一个connection。
+	//如果到了检查TTL的时间，丢弃过期的messages。最后触发energy.update。
 	@Override
 	public void update() {
 		super.update();
-
+		//理论上每个路由模块的List<Connection>都可以单独发送消息
+		//但是当前仿真系统之允许某一时间只有一个Connection发送消息
 		/* in theory we can have multiple sending connections even though
 		  currently all routers allow only one concurrent sending connection */
 		for (int i=0; i<this.sendingConnections.size(); ) {
@@ -606,6 +665,8 @@ public abstract class ActiveRouter extends MessageRouter {
 
 			if (removeCurrent) {
 				// if the message being sent was holding excess buffer, free it
+			    //这个移除并不是说把上面代码中的con.getMessage()给移除
+			    //而是把"待发送消息列表"中的最先可以被移除的信息移除，即先进先出
 				if (this.getFreeBufferSize() < 0) {
 					this.makeRoomForMessage(0);
 				}

@@ -29,32 +29,34 @@ public class World {
 	public static final String RANDOMIZE_UPDATES_S = "randomizeUpdateOrder";
 	/** should the update order of nodes be randomized -setting's default value
 	 * ({@value}) */
+	//节点的更新顺序是否是随机的，默认为true
 	public static final boolean DEF_RANDOMIZE_UPDATES = true;
 
 	/**
 	 * Should the connectivity simulation be stopped after one round
 	 * -setting id ({@value}). Boolean (true/false) variable.
 	 */
+	//模拟在一轮之后是否停止
 	public static final String SIMULATE_CON_ONCE_S = "simulateConnectionsOnce";
-
+	//表示世界的大小
 	private int sizeX;
 	private int sizeY;
-	private List<EventQueue> eventQueues;
-	private double updateInterval;
-	private SimClock simClock;
-	private double nextQueueEventTime;
-	private EventQueue nextEventQueue;
+	private List<EventQueue> eventQueues;//事件队列列表
+	private double updateInterval;//更新间隔
+	private SimClock simClock;//仿真时钟
+	private double nextQueueEventTime;//下一次事件队列触发时间
+	private EventQueue nextEventQueue;//下一个事件队列
 	/** list of nodes; nodes are indexed by their network address */
-	private List<DTNHost> hosts;
+	private List<DTNHost> hosts;//节点列表，排序根据其网络地址
 	private boolean simulateConnections;
 	/** nodes in the order they should be updated (if the order should be
 	 * randomized; null value means that the order should not be randomized) */
-	private ArrayList<DTNHost> updateOrder;
+	private ArrayList<DTNHost> updateOrder;//节点以这个列表中的顺序被更新
 	/** is cancellation of simulation requested from UI */
-	private boolean isCancelled;
-	private List<UpdateListener> updateListeners;
+	private boolean isCancelled;//仿真是否在UI界面被终止
+	private List<UpdateListener> updateListeners;//UpdateListener存储列表
 	/** Queue of scheduled update requests */
-	private ScheduledUpdatesQueue scheduledUpdates;
+	private ScheduledUpdatesQueue scheduledUpdates;//：计划更新需求列表，该类是EventQueue接口的一个实现，可以满足在特殊的仿真时间触发一个更新事件。
 	private boolean simulateConOnce;
 
 	/**
@@ -83,13 +85,13 @@ public class World {
 	 * Initializes settings fields that can be configured using Settings class
 	 */
 	private void initSettings() {
-		Settings s = new Settings(OPTIMIZATION_SETTINGS_NS);
+		Settings s = new Settings(OPTIMIZATION_SETTINGS_NS);//OPTIMIZATION_SETTINGS_NS = "Optimization"
 		boolean randomizeUpdates = DEF_RANDOMIZE_UPDATES;
 
-		if (s.contains(RANDOMIZE_UPDATES_S)) {
+		if (s.contains(RANDOMIZE_UPDATES_S)) {//RANDOMIZE_UPDATES_S = "randomizeUpdateOrder"
 			randomizeUpdates = s.getBoolean(RANDOMIZE_UPDATES_S);
 		}
-		simulateConOnce = s.getBoolean(SIMULATE_CON_ONCE_S, false);
+		simulateConOnce = s.getBoolean(SIMULATE_CON_ONCE_S, false);//SIMULATE_CON_ONCE_S = "simulateConnectionsOnce"
 
 		if(randomizeUpdates) {
 			// creates the update order array that can be shuffled

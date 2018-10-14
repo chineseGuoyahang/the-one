@@ -56,6 +56,7 @@ public class SprayAndWaitRouter extends ActiveRouter {
 	}
 
 	@Override
+	//更新接收端消息的份数
 	public Message messageTransferred(String id, DTNHost from) {
 		Message msg = super.messageTransferred(id, from);
 		Integer nrofCopies = (Integer)msg.getProperty(MSG_COUNT_PROPERTY);
@@ -134,6 +135,7 @@ public class SprayAndWaitRouter extends ActiveRouter {
 	 * In binary Spray and Wait, sending host is left with floor(n/2) copies,
 	 * but in standard mode, nrof copies left is reduced by one.
 	 */
+	//更新发送端消息的份数
 	@Override
 	protected void transferDone(Connection con) {
 		Integer nrofCopies;

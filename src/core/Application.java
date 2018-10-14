@@ -34,7 +34,7 @@ import java.util.List;
  */
 public abstract class Application {
 
-	private List<ApplicationListener> aListeners = null;
+	private List<ApplicationListener> aListeners = null;//这个应用程序监听器的列表与场景中的应用程序监听器的列表是同一个
 
 	public String	appID	= null;
 

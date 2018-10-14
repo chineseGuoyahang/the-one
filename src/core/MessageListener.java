@@ -23,6 +23,7 @@ public interface MessageListener {
 	 * @param from Node where the message is transferred from
 	 * @param to Node where the message is transferred to
 	 */
+	//当消息传输开始时调用该方法
 	public void messageTransferStarted(Message m, DTNHost from, DTNHost to);
 
 	/**

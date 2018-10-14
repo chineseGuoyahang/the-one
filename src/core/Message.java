@@ -21,7 +21,7 @@ public class Message implements Comparable<Message> {
 	private DTNHost from;//源主机
 	private DTNHost to;//目的主机
 	/** Identifier of the message */
-	private String id;//消息id(String):不如叫消息的名字吧，非独一无二
+	private String id;//消息id(String):不如叫消息的名字吧，同一个消息的副本就有相同的id，不同消息的id必须不同
 	/** Size of the message (bytes) */
 	private int size;//消息大小
 	/** List of nodes this message has passed */
@@ -132,6 +132,7 @@ public class Message implements Comparable<Message> {
 	 * Adds a new node on the list of nodes this message has passed
 	 * @param node The node to add
 	 */
+	//在消息经过的路径中增加一个新的节点
 	public void addNodeOnPath(DTNHost node) {
 		this.path.add(node);
 	}

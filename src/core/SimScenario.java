@@ -26,61 +26,65 @@ public class SimScenario implements Serializable {
 	private static SimScenario myinstance=null;
 
 	/** namespace of scenario settings ({@value})*/
-	public static final String SCENARIO_NS = "Scenario";
+	public static final String SCENARIO_NS = "Scenario";//场景的命名空间
 	/** number of host groups -setting id ({@value})*/
-	public static final String NROF_GROUPS_S = "nrofHostGroups";
+	public static final String NROF_GROUPS_S = "nrofHostGroups";//该场景中包含几个主机组
 	/** number of interface types -setting id ({@value})*/
-	public static final String NROF_INTTYPES_S = "nrofInterfaceTypes";
+	public static final String NROF_INTTYPES_S = "nrofInterfaceTypes";//该场景中接口类型的个数
 	/** scenario name -setting id ({@value})*/
-	public static final String NAME_S = "name";
+	public static final String NAME_S = "name";//该场景的名称
 	/** end time -setting id ({@value})*/
-	public static final String END_TIME_S = "endTime";
+	public static final String END_TIME_S = "endTime";//该场景的仿真时长
 	/** update interval -setting id ({@value})*/
-	public static final String UP_INT_S = "updateInterval";
+	public static final String UP_INT_S = "updateInterval";//场景更新间隔
 	/** simulate connections -setting id ({@value})*/
+    //控制是否两个节点进入彼此通信范围自动打开连接
+    //true则GUI界面中节点一直在动，而且会显示节点间的连接状况 
+    //如果是外部读入移动数据模式，要设为false，否则节点会一直处于开连接状态。
 	public static final String SIM_CON_S = "simulateConnections";
 
-	/** namespace for interface type settings ({@value}) */
+	/** namespace for interface type settings ({@value}) *///接口的命名空间
 	public static final String INTTYPE_NS = "Interface";
 	/** interface type -setting id ({@value}) */
-	public static final String INTTYPE_S = "type";
+	public static final String INTTYPE_S = "type";//接口的类型
 	/** interface name -setting id ({@value}) */
-	public static final String INTNAME_S = "name";
+	public static final String INTNAME_S = "name";//接口的名字
 
 	/** namespace for application type settings ({@value}) */
-	public static final String APPTYPE_NS = "Application";
+	public static final String APPTYPE_NS = "Application";//应用的明明空间
 	/** application type -setting id ({@value}) */
-	public static final String APPTYPE_S = "type";
+	public static final String APPTYPE_S = "type";//应用的类型
 	/** setting name for the number of applications */
-	public static final String APPCOUNT_S = "nrofApplications";
+	public static final String APPCOUNT_S = "nrofApplications";//应用的个数
 
+	//以下组设置对所有组生效
 	/** namespace for host group settings ({@value})*/
-	public static final String GROUP_NS = "Group";
+	public static final String GROUP_NS = "Group";//组的命名空间
 	/** group id -setting id ({@value})*/
-	public static final String GROUP_ID_S = "groupID";
+	public static final String GROUP_ID_S = "groupID";//组的标识符
 	/** number of hosts in the group -setting id ({@value})*/
-	public static final String NROF_HOSTS_S = "nrofHosts";
+	public static final String NROF_HOSTS_S = "nrofHosts";//组中包含的主机个数
 	/** movement model class -setting id ({@value})*/
-	public static final String MOVEMENT_MODEL_S = "movementModel";
+	public static final String MOVEMENT_MODEL_S = "movementModel";//组中主机的移动模型
 	/** router class -setting id ({@value})*/
-	public static final String ROUTER_S = "router";
+	public static final String ROUTER_S = "router";//组中主机的路由算法
 	/** number of interfaces in the group -setting id ({@value})*/
-	public static final String NROF_INTERF_S = "nrofInterfaces";
+	public static final String NROF_INTERF_S = "nrofInterfaces";//组内主机拥有的接口个数
 	/** interface name in the group -setting id ({@value})*/
-	public static final String INTERFACENAME_S = "interface";
+	public static final String INTERFACENAME_S = "interface";//组内主机的接口
 	/** application name in the group -setting id ({@value})*/
-	public static final String GAPPNAME_S = "application";
+	public static final String GAPPNAME_S = "application";//组内主机的应用
 
 	/** package where to look for movement models */
-	private static final String MM_PACKAGE = "movement.";
+	private static final String MM_PACKAGE = "movement.";//移动模型所在的包名
 	/** package where to look for router classes */
-	private static final String ROUTING_PACKAGE = "routing.";
+	private static final String ROUTING_PACKAGE = "routing.";//路由模型所在的包名
 
 	/** package where to look for interface classes */
-	private static final String INTTYPE_PACKAGE = "interfaces.";
+	private static final String INTTYPE_PACKAGE = "interfaces.";//接口模型所在的包名
 
 	/** package where to look for application classes */
-	private static final String APP_PACKAGE = "applications.";
+	private static final String APP_PACKAGE = "applications.";//应用模型所在的包名
 
 	/** The world instance */
 	private World world;
@@ -131,6 +135,7 @@ public class SimScenario implements Serializable {
 	 * Creates a scenario based on Settings object.
 	 */
 	protected SimScenario() {
+	//场景设置
 		Settings s = new Settings(SCENARIO_NS);
 		nrofGroups = s.getInt(NROF_GROUPS_S);
 
@@ -145,20 +150,21 @@ public class SimScenario implements Serializable {
 
 		this.simMap = null;
 		this.maxHostRange = 1;
-
+	//创建存放监听器的list
 		this.connectionListeners = new ArrayList<ConnectionListener>();
 		this.messageListeners = new ArrayList<MessageListener>();
 		this.movementListeners = new ArrayList<MovementListener>();
 		this.updateListeners = new ArrayList<UpdateListener>();
 		this.appListeners = new ArrayList<ApplicationListener>();
+	//创建事件队列处理器
 		this.eqHandler = new EventQueueHandler();
-
+	//移动模型设置
 		/* TODO: check size from movement models */
 		s.setNameSpace(MovementModel.MOVEMENT_MODEL_NS);
 		int [] worldSize = s.getCsvInts(MovementModel.WORLD_SIZE, 2);
 		this.worldSizeX = worldSize[0];
 		this.worldSizeY = worldSize[1];
-
+	//创建主机
 		createHosts();
 
 		this.world = new World(hosts, worldSizeX, worldSizeY, updateInterval,
@@ -325,16 +331,18 @@ public class SimScenario implements Serializable {
 			List<NetworkInterface> interfaces =
 				new ArrayList<NetworkInterface>();
 			Settings s = new Settings(GROUP_NS+i);
-			s.setSecondaryNamespace(GROUP_NS);
-			String gid = s.getSetting(GROUP_ID_S);
+			s.setSecondaryNamespace(GROUP_NS);//上面两行说明nameSpace与secondaryNameSpace的字段是通用的
+			String gid = s.getSetting(GROUP_ID_S);// GROUP_ID_S = "groupID"
 			int nrofHosts = s.getInt(NROF_HOSTS_S);
 			int nrofInterfaces = s.getInt(NROF_INTERF_S);
 			int appCount;
 
 			// creates prototypes of MessageRouter and MovementModel
+		//创建移动模块对象
 			MovementModel mmProto =
 				(MovementModel)s.createIntializedObject(MM_PACKAGE +
 						s.getSetting(MOVEMENT_MODEL_S));
+		//创建路由模块对象
 			MessageRouter mRouterProto =
 				(MessageRouter)s.createIntializedObject(ROUTING_PACKAGE +
 						s.getSetting(ROUTER_S));
@@ -342,7 +350,7 @@ public class SimScenario implements Serializable {
 			/* checks that these values are positive (throws Error if not) */
 			s.ensurePositiveValue(nrofHosts, NROF_HOSTS_S);
 			s.ensurePositiveValue(nrofInterfaces, NROF_INTERF_S);
-
+		//创建接口板以及接口
 			// setup interfaces
 			for (int j=1;j<=nrofInterfaces;j++) {
 				String intName = s.getSetting(INTERFACENAME_S + j);
@@ -351,12 +359,12 @@ public class SimScenario implements Serializable {
 					(NetworkInterface)intSettings.createIntializedObject(
 							INTTYPE_PACKAGE +intSettings.getSetting(INTTYPE_S));
 				iface.setClisteners(connectionListeners);
-				iface.setGroupSettings(s);
+				iface.setGroupSettings(s);//默认设置没有关于这个的设置
 				interfaces.add(iface);
 			}
-
+		//应用设置：(默认设置也没设置)
 			// setup applications
-			if (s.contains(APPCOUNT_S)) {
+			if (s.contains(APPCOUNT_S)) {// APPCOUNT_S = "nrofApplications"
 				appCount = s.getInt(APPCOUNT_S);
 			} else {
 				appCount = 0;
@@ -384,7 +392,7 @@ public class SimScenario implements Serializable {
 					System.exit(-1);
 				}
 			}
-
+			//如果该主机的移动模型是"基于地图的移动模型"，就获取地图
 			if (mmProto instanceof MapBasedMovement) {
 				this.simMap = ((MapBasedMovement)mmProto).getMap();
 			}
