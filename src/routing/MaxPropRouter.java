@@ -37,47 +37,65 @@ import core.Settings;
  */
 public class MaxPropRouter extends ActiveRouter {
     /** Router's setting namespace ({@value})*/
+    //命名空间
 	public static final String MAXPROP_NS = "MaxPropRouter";
 	/**
 	 * Meeting probability set maximum size -setting id ({@value}).
 	 * The maximum amount of meeting probabilities to store.  */
+	//最大相遇概率
 	public static final String PROB_SET_MAX_SIZE_S = "probSetMaxSize";
     /** Default value for the meeting probability set maximum size ({@value}).*/
+	//最大相遇概率的默认值
     public static final int DEFAULT_PROB_SET_MAX_SIZE = 50;
+    //最大相遇概率
     private static int probSetMaxSize;
 
 	/** probabilities of meeting hosts */
+    //主机相遇的可能性
 	private MeetingProbabilitySet probs;
 	/** meeting probabilities of all hosts from this host's point of view
 	 * mapped using host's network address */
+	//本主机与其他主机相遇的可能性
+	//使用主机的地址进行映射<int,<int,double>>，这个应该是整个网络所有节点的信息
 	private Map<Integer, MeetingProbabilitySet> allProbs;
 	/** the cost-to-node calculator */
+	//开销计算
 	private MaxPropDijkstra dijkstra;
 	/** IDs of the messages that are known to have reached the final dst */
+	//已知送往目的主机的消息id(发送到消息的目的节点：投递成功)
 	private Set<String> ackedMessageIds;
 	/** mapping of the current costs for all messages. This should be set to
 	 * null always when the costs should be updated (a host is met or a new
 	 * message is received) */
+	//本主机与其他主机传输消息的开销
+    //使用主机的地址进行映射
 	private Map<Integer, Double> costsForMessages;
 	/** From host of the last cost calculation */
+	//上一次开销计算的主机
 	private DTNHost lastCostFrom;
 
 	/** Map of which messages have been sent to which hosts from this host */
+	//本主机已经发送到其他主机的 主机-->消息map(发送到中间节点)
 	private Map<DTNHost, Set<String>> sentMessages;
 
 	/** Over how many samples the "average number of bytes transferred per
 	 * transfer opportunity" is taken */
+	//int[] avgSamples该数组的上限
 	public static int BYTES_TRANSFERRED_AVG_SAMPLES = 10;
+	//存放样本
 	private int[] avgSamples;
+	//下一次样本的索引即int[] avgSamples，该数组下一次存放数据的下标
 	private int nextSampleIndex = 0;
 	/** current value for the "avg number of bytes transferred per transfer
 	 * opportunity"  */
+	//"每次传输机会的平均传输字节数"的当前值即avgSamples数组内的"所有值相加再除以总的数据个数"
 	private int avgTransferredBytes = 0;
 
 	/** The alpha parameter string*/
 	public static final String ALPHA_S = "alpha";
 
 	/** The alpha variable, default = 1;*/
+	//变量alpha的值，默认为1
 	private double alpha;
 
 	/** The default value for alpha */
@@ -123,10 +141,10 @@ public class MaxPropRouter extends ActiveRouter {
 	@Override
 	public void changedConnection(Connection con) {
 		super.changedConnection(con);
-
+		
 		if (con.isUp()) { // new connection
 			this.costsForMessages = null; // invalidate old cost estimates
-
+			//如果本节点是链路连接的发起段source host=====dest host
 			if (con.isInitiator(getHost())) {
 				/* initiator performs all the actions on behalf of the
 				 * other node too (so that the meeting probs are updated
@@ -145,9 +163,10 @@ public class MaxPropRouter extends ActiveRouter {
 				otherRouter.deleteAckedMessages();
 
 				/* update both meeting probabilities */
+				//更新相遇概率值
 				probs.updateMeetingProbFor(otherHost.getAddress());
 				otherRouter.probs.updateMeetingProbFor(getHost().getAddress());
-
+//================================BEGIN=====================================================      
 				/* exchange the transitive probabilities */
 				this.updateTransitiveProbs(otherRouter.allProbs);
 				otherRouter.updateTransitiveProbs(this.allProbs);
@@ -155,6 +174,11 @@ public class MaxPropRouter extends ActiveRouter {
 						otherRouter.probs.replicate());
 				otherRouter.allProbs.put(getHost().getAddress(),
 						this.probs.replicate());
+				
+				
+//================================END=====================================================				
+				
+				
 			}
 		}
 		else {
@@ -182,6 +206,7 @@ public class MaxPropRouter extends ActiveRouter {
 	/**
 	 * Deletes the messages from the message buffer that are known to be ACKed
 	 */
+	//删除该消息被成功交付，就删除该消息
 	private void deleteAckedMessages() {
 		for (String id : this.ackedMessageIds) {
 			if (this.hasMessage(id) && !isSending(id)) {
@@ -207,6 +232,9 @@ public class MaxPropRouter extends ActiveRouter {
 	 * delivered messages so their IDs are stored.
 	 * @param con The connection whose transfer was finalized
 	 */
+	//主要做了两件事
+	//1.消息发送到"消息的destination"，那么就在自己的ackedMessageIds中加入该id，然后从本机删除该消息
+	//2.消息发送到中间节点，那么，就把向：主机---->消息列表Map<DTNHost, Set<String>> 中加入该entry，防止重复发送
 	@Override
 	protected void transferDone(Connection con) {
 		Message m = con.getMessage();
@@ -233,6 +261,7 @@ public class MaxPropRouter extends ActiveRouter {
 	 * transfer opportunity.
 	 * @param newValue The new value to add to the estimate
 	 */
+	//更新每次传输机会的平均传输字节数
 	private void updateTransferredBytesAvg(int newValue) {
 		int realCount = 0;
 		int sum = 0;
@@ -267,6 +296,9 @@ public class MaxPropRouter extends ActiveRouter {
 	 * (no messages in buffer or all messages in buffer are being sent and
 	 * exludeMsgBeingSent is true)
 	 */
+	//excludeMsgBeingSent=true，把"正在发送的消息"排除在外 即不移除正在发送的消息
+	//excludeMsgBeingSent=false，移除正在发送的消息
+	//把排序后的最后一个消息，置为下一次要删除的消息
     @Override
 	protected Message getNextMessageToRemove(boolean excludeMsgBeingSent) {
 		Collection<Message> messages = this.getMessageCollection();
@@ -310,6 +342,7 @@ public class MaxPropRouter extends ActiveRouter {
 	 * @return The cost of the cheapest path to the destination or
 	 * Double.MAX_VALUE if such a path doesn't exist
 	 */
+	//利用dijsktra算法，求出最小代价
 	public double getCost(DTNHost from, DTNHost to) {
 		/* check if the cached values are OK */
 		if (this.costsForMessages == null || lastCostFrom != from) {
@@ -382,6 +415,13 @@ public class MaxPropRouter extends ActiveRouter {
 
 		/* sort the message-connection tuples according to the criteria
 		 * defined in MaxPropTupleComparator */
+		  /*
+    	     * 跳数门限：threshold
+    	      当两个消息对象的跳数，不全超过门限值时：
+    	              跳数小的排前面，跳数大的排后面
+    	     当两个消息对象的跳数，全超过门限值时：
+    	             开销小的排前面，开销大的排后面
+	     */
 		Collections.sort(messages, new MaxPropTupleComparator(calcThreshold()));
 		return tryMessagesForConnected(messages);
 	}
@@ -395,8 +435,8 @@ public class MaxPropRouter extends ActiveRouter {
 	 */
 	public int calcThreshold() {
 		/* b, x and p refer to respective variables in the paper's equations */
-		long b = this.getBufferSize();
-		long x = this.avgTransferredBytes;
+		long b = this.getBufferSize();//存储待发送消息的缓存大小
+		long x = this.avgTransferredBytes;//每次传输机会的平均传输字节数
 		long p;
 
 		if (x == 0) {
@@ -409,7 +449,7 @@ public class MaxPropRouter extends ActiveRouter {
 			p = x;
 		}
 		else if (b/2 <= x && x < b) {
-			p = Math.min(x, b-x);
+			p = Math.min(x, b-x);//这是在干嘛？。x>=b/2,b-x<=b/2,显然x>=b-x,所以p=b-x;
 		}
 		else {
 			return 0; // no need for the threshold
@@ -452,6 +492,16 @@ public class MaxPropRouter extends ActiveRouter {
 	 * threshold are given priority and they are ordered by their hop count.
 	 * Other messages are ordered by their delivery cost.
 	 */
+	/**
+	 * 跳数门限：threshold
+	 * 当两个消息对象的跳数，不全超过门限值时：
+	 *         跳数小的排前面，跳数大的排后面
+	 *当两个消息对象的跳数，全超过门限值时：
+	 *        开销小的排前面，开销大的排后面
+	 *        若开销相等：跳数小的排前面，跳数大的排后面
+	 *                  若跳数相等，则按配置文件排序
+	 *
+	 */
 	private class MaxPropComparator implements Comparator<Message> {
 		private int threshold;
 		private DTNHost from1;
@@ -463,6 +513,7 @@ public class MaxPropRouter extends ActiveRouter {
 		 * @param treshold Messages with the hop count smaller than this
 		 * value are transferred first (and ordered by the hop count)
 		 */
+		//计算从本主机到消息目的主机的开销
 		public MaxPropComparator(int treshold) {
 			this.threshold = treshold;
 			this.from1 = this.from2 = getHost();
@@ -475,6 +526,7 @@ public class MaxPropRouter extends ActiveRouter {
 		 * @param from1 The host where the cost of msg1 is calculated from
 		 * @param from2 The host where the cost of msg2 is calculated from
 		 */
+		//计算从主机from1，from2到消息目的主机的开销
 		public MaxPropComparator(int treshold, DTNHost from1, DTNHost from2) {
 			this.threshold = treshold;
 			this.from1 = from1;

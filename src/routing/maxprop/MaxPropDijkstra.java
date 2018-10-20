@@ -18,20 +18,26 @@ import java.util.Set;
  */
 public class MaxPropDijkstra {
 	/** Value for infinite distance  */
+    //无限距离值
 	private static final Double INFINITY = Double.MAX_VALUE;
 	/** Initial size of the priority queue */
+	//优先级队列的初试化大小
 	private static final int PQ_INIT_SIZE = 11;
 
 	/** Map of node distances from the source node */
 	private DistanceMap distancesFromStart;
 	/** Set of already visited nodes (where the shortest path is known) */
+	//已经访问过的节点
 	private Set<Integer> visited;
 	/** Priority queue of unvisited nodes discovered so far */
+	//迄今发现的未访问节点的优先级队列
 	private Queue<Integer> unvisited;
 	/** Map of previous nodes on the shortest path(s) -- only used for
 	 * debugging purposes */
+	//
 	private Map<Integer, Integer> prevNodes;
 	/** Mapping of to other nodes' (whom this node has met) probability sets */
+	//本节点相遇的其他节点的“概率集”
 	private Map<Integer, MeetingProbabilitySet> probs;
 
 	/**
@@ -47,6 +53,10 @@ public class MaxPropDijkstra {
 	 * Initializes a new search with the first hop router node
 	 * @param firstHop The first hop router node
 	 */
+	//初始化Dijsktra的几大要素；
+	//1.visited[]：访问过的节点集合
+	//2.unvisited：未访问过的节点的队列
+	//3.prevNodes:   a--->b--->c:存放目的节点的前一个节点
 	private void initWith(Integer firstHop) {
 		this.unvisited = new PriorityQueue<Integer>(PQ_INIT_SIZE,
 				new DistanceComparator());
@@ -96,6 +106,7 @@ public class MaxPropDijkstra {
 	 * Relaxes the neighbors of a node (updates the shortest distances).
 	 * @param node The node whose neighbors are relaxed
 	 */
+	//更新最短路径
 	private void relax(Integer node) {
 		double nodeDist = distancesFromStart.get(node);
 		Collection<Integer> neighbors;

@@ -45,49 +45,59 @@ import core.Settings;
 public class MessageTransferAcceptPolicy {
 
 	/** Namespace for all "Message Transfer Accept policy" settings ({@value})*/
+    //命名空间
 	public static final String MTA_POLICY_NS = "mtaPolicy";
 
 	/** Number of Module Communication Bus Conditions -setting id ({@value}).
 	 * Two comma separated values. Defines the number of receiving and number of
 	 * sending conditions to read from the settings. */
+	//模块通信总线的条件输
+	//两个用逗号分隔的值，第一个表示接受消息的限制条件数目，第二个表示发送消息的限制条件数目
 	public static final String NROF_MCBCS_S = "nrofMCBACs";
 
 	/** Module Communication Bus Arithmetic Condition for Receiving -setting id
 	 * ({@value}). {@link ArithmeticCondition}. Defines one arithmetic condition
 	 * to use for receiving messages. */
+	//模块通信总线接收算法条件，定义一个用于接收消息的算术条件
 	public static final String MCBACR_S = "MCBRcondition";
 	/** Module Communication Bus Arithmetic Condition for Sending -setting id
 	 * ({@value}). {@link ArithmeticCondition}. */
+	//模块通信总线发送算法条件，定义一个用于发送消息的算术条件
 	public static final String MCBACS_S = "MCBScondition";
 
 	/** Module Communication Bus Condition Value for Receiving -setting id
 	 * ({@value}). String. Defines the ID to use with the receiving
 	 * condition. */
+	//模块通信总线接收条件值
 	public static final String MCBCVR_S = "MCBRvalue";
 	/** Module Communication Bus Condition Value for Sending -setting id
 	 * ({@value}). String. Defines the ID to use with the sending
 	 * condition. */
+	//模块通信总线发送条件值
 	public static final String MCBCVS_S = "MCBSvalue";
-
 	/** The valued used in to-policy to refer to this host ({@value}) */
+	//to-策略中用于引用此主机的值
 	public static final int TO_ME_VALUE = -1;
 
 	/** Simple-policy accept-to -setting id ({@value}). Integer list.
 	 * Defines the addresses of the hosts accepted as the destination of a
 	 * message when receiving messages. Special value {@link #TO_ME_VALUE}
 	 * refers to this host. */
+	//定义接收消息时被认为是消息目的地的主机的地址。特殊值to_ME_value指的是该主机。
 	public static final String TO_RPOLICY_S = "toReceivePolicy";
 
 	/** Simple-policy accept-from -setting id ({@value}). Integer list.
 	 * Defines the addresses of the hosts accepted as the source of a
 	 * message when receiving messages. Special value {@link #TO_ME_VALUE}
 	 * refers to this host. */
+	//定义接收消息时被认为是消息源的主机的地址。特殊值to_ME_value指的是该主机。
 	public static final String FROM_RPOLICY_S = "fromReceivePolicy";
 
 	/** Simple-policy accept-to -setting id ({@value}). Integer list.
 	 * Defines the addresses of the hosts accepted as the destination of a
 	 * message when sending messages. Special value {@link #TO_ME_VALUE} refers
 	 * to this host (but doesn't usually make much sense here). */
+	//定义在发送消息时被认为是消息目的地的主机的地址。特殊值to_ME_value指的是这个主机(但在这里通常没有多大意义)。
 	public static final String TO_SPOLICY_S = "toSendPolicy";
 
 	/** <P> Simple-policy accept-from -setting id ({@value}). Integer list.
@@ -96,17 +106,21 @@ public class MessageTransferAcceptPolicy {
 	 * to this host. </P>
 	 * <P> <B>Note:</B> if this setting is defined and the {@link #TO_ME_VALUE}
 	 * is NOT listed, the hosts own messages are not sent anywhere. </P>*/
+	//定义在发送消息时被认为是消息源的主机的地址。特殊值to_ME_value指的是该主机
+	//如果定义了此设置并没有列出to_ME_value，那么主机自己的消息不会发送到任何地方
 	public static final String FROM_SPOLICY_S = "fromSendPolicy";
 
 	/** Hop count forwarding receive policy -setting id ({@value}).
 	 * {@link ArithmeticCondition}. Defines condition for the message hop
 	 * count; if the condition does not match, the message is rejected,
 	 * unless it is destined to this node. */
+	//定义消息跳数的条件；如果条件不匹配，则拒绝消息，除非该消息是以此节点为目的地的
 	public static final String HOPCOUNT_RPOLICY_S = "hopCountReceivePolicy";
 	/** Hop count forwarding send policy -setting id ({@value}).
 	 * {@link ArithmeticCondition}. Defines condition for the message hop
 	 * count; if the condition does not match, the message is not offered
 	 * to other nodes, unless it would be delivered to the final destination. */
+	//定义消息跳数的条件；如果条件不匹配，则该消息不会提供给其他节点，除非它将被传递到最终目的地
 	public static final String HOPCOUNT_SPOLICY_S = "hopCountSendPolicy";
 
 	private ArrayList<Tuple<String,ArithmeticCondition>> recvConditions = null;

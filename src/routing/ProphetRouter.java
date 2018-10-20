@@ -29,30 +29,35 @@ import core.SimClock;
  */
 public class ProphetRouter extends ActiveRouter {
 	/** delivery predictability initialization constant*/
+    //传输预测概率的初始化常数
 	public static final double P_INIT = 0.75;
 	/** delivery predictability transitivity scaling constant default value */
+	//可传递属性对传递传输预测概率的影响程度
 	public static final double DEFAULT_BETA = 0.25;
+	//传输预测概率的老化常数
 	/** delivery predictability aging constant */
 	public static final double DEFAULT_GAMMA = 0.98;
-
+	//Prophet路由的命名空间
 	/** Prophet router's setting namespace ({@value})*/
 	public static final String PROPHET_NS = "ProphetRouter";
 	/**
 	 * Number of seconds in time unit -setting id ({@value}).
 	 * How many seconds one time unit is when calculating aging of
 	 * delivery predictions. Should be tweaked for the scenario.*/
+	//一个时间单位为多少秒
 	public static final String SECONDS_IN_UNIT_S ="secondsInTimeUnit";
-
 	/**
 	 * Transitivity scaling constant (beta) -setting id ({@value}).
 	 * Default value for setting is {@link #DEFAULT_BETA}.
 	 */
+	//ProphetRouter.beta就相当于公式中的传输预测概率常数：P_init
 	public static final String BETA_S = "beta";
 
 	/**
 	 * Predictability aging constant (gamma) -setting id ({@value}).
 	 * Default value for setting is {@link #DEFAULT_GAMMA}.
 	 */
+	//ProphetRouter.gamma：传输预测概率的老化常数：r
 	public static final String GAMMA_S = "gamma";
 
 	/** the value of nrof seconds in time unit -setting */
@@ -61,10 +66,11 @@ public class ProphetRouter extends ActiveRouter {
 	private double beta;
 	/** value of gamma setting */
 	private double gamma;
-
+	//key:其他主机  value：本主机遇见key的概率
 	/** delivery predictabilities */
 	private Map<DTNHost, Double> preds;
 	/** last delivery predictability update (sim)time */
+	//上一次老化传输预测概率的时间
 	private double lastAgeUpdate;
 
 	/**
@@ -128,6 +134,7 @@ public class ProphetRouter extends ActiveRouter {
 	 * <CODE>P(a,b) = P(a,b)_old + (1 - P(a,b)_old) * P_INIT</CODE>
 	 * @param host The host we just met
 	 */
+	//更新传输预测概率P(a,b)
 	private void updateDeliveryPredFor(DTNHost host) {
 		double oldValue = getPredFor(host);
 		double newValue = oldValue + (1 - oldValue) * P_INIT;
@@ -140,6 +147,7 @@ public class ProphetRouter extends ActiveRouter {
 	 * @param host The host to look the P for
 	 * @return the current P value
 	 */
+	//得到传输预测概率P(a,b)
 	public double getPredFor(DTNHost host) {
 		ageDeliveryPreds(); // make sure preds are updated before getting
 		if (preds.containsKey(host)) {
@@ -156,6 +164,7 @@ public class ProphetRouter extends ActiveRouter {
 	 * </CODE>
 	 * @param host The B host who we just met
 	 */
+	//更新传输预测概率P(a,c) = P(a,c)_old + (1 - P(a,c)_old) * P(a,b) * P(b,c) * BETA
 	private void updateTransitivePreds(DTNHost host) {
 		MessageRouter otherRouter = host.getRouter();
 		assert otherRouter instanceof ProphetRouter : "PRoPHET only works " +
@@ -182,6 +191,7 @@ public class ProphetRouter extends ActiveRouter {
 	 * time units that have elapsed since the last time the metric was aged.
 	 * @see #SECONDS_IN_UNIT_S
 	 */
+	//老化传输预测概率
 	private void ageDeliveryPreds() {
 		double timeDiff = (SimClock.getTime() - this.lastAgeUpdate) /
 			secondsInTimeUnit;
@@ -202,6 +212,7 @@ public class ProphetRouter extends ActiveRouter {
 	 * Returns a map of this router's delivery predictions
 	 * @return a map of this router's delivery predictions
 	 */
+	//获取该路由模块的Map<DTNHost, Double>
 	private Map<DTNHost, Double> getDeliveryPreds() {
 		ageDeliveryPreds(); // make sure the aging is done
 		return this.preds;
@@ -247,6 +258,7 @@ public class ProphetRouter extends ActiveRouter {
 				if (othRouter.hasMessage(m.getId())) {
 					continue; // skip messages that the other one has
 				}
+				//如果说另一个主机到消息目的节点的概率较大，就加入待传输列表messages
 				if (othRouter.getPredFor(m.getTo()) > getPredFor(m.getTo())) {
 					// the other node has higher probability of delivery
 					messages.add(new Tuple<Message, Connection>(m,con));

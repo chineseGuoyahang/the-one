@@ -477,7 +477,7 @@ public abstract class MessageRouter {
 	 * @param id Identifier of the message to remove
 	 * @return The removed message or null if message for the ID wasn't found
 	 */
-	//从内存中移除消息，并返回该消息
+	//从待发送消息列表中移除消息，并返回该消息
 	protected Message removeFromMessages(String id) {
 		Message m = this.messages.remove(id);
 		return m;
@@ -526,7 +526,7 @@ public abstract class MessageRouter {
 	 * should be set to true. False value indicates e.g. remove of message
 	 * because it was delivered to final destination.
 	 */
-	//从内存移除消息，并通知消息监听器：消息被移除
+	//从待发送消息列表中移除消息，并通知消息监听器：消息被移除
 	//drop=true；表示因为内存被沾满，该消息被丢弃
 	//drop=false：表示该消息因为已经被传送到终端节点，而被丢弃
 	public void deleteMessage(String id, boolean drop) {

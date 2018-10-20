@@ -19,7 +19,7 @@ import static core.Constants.DEBUG;
 public class MeetingProbabilitySet {
 	public static final int INFINITE_SET_SIZE = Integer.MAX_VALUE;
 	/** meeting probabilities (probability that the next node one meets is X) */
-	private Map<Integer, Double> probs;
+	private Map<Integer, Double> probs;//表示其他n-1个节点遇见本节点(节点i)的可能性
 	/** the time when this MPS was last updated */
 	private double lastUpdateTime;
 	/** the alpha parameter */
@@ -91,6 +91,7 @@ public class MeetingProbabilitySet {
 		/* now the sum of all entries is 1+alpha;
 		 * normalize to one by dividing all the entries by 1+alpha */
 		for (Map.Entry<Integer, Double> entry : probs.entrySet()) {
+		    //归一化
 			entry.setValue(entry.getValue() / (1+alpha));
             if (entry.getValue() < smallestValue) {
                 smallestEntry = entry;
