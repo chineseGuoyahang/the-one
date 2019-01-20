@@ -1,0 +1,72 @@
+Scenario.name = test-traineB
+
+#设置仿真时间为10h
+Scenario.endTime = 36000
+#场景更新间隔为0.1s
+Scenario.updateInterval = 0.1
+Scenario.simulateConnections = true
+
+btInterface.type = SimpleBroadcastInterface
+btInterface.transmitSpeed = 250k
+btInterface.transmitRange = 50
+
+Scenario.nrofHostGroups = 1
+
+
+Group.movementModel = ExternalMovement
+Group.router = EpidemicRouter
+ExternalMovement.file = locationSet/11m19.txt
+# Message TTL of 300 minutes (5 hours)
+Group.msgTtl = 200
+Group.nrofInterfaces = 1
+Group.interface1 = btInterface
+
+
+# All nodes have the bluetooth interface
+Group.nrofInterfaces = 1
+Group.interface1 = btInterface
+
+
+Group.nrofHosts = 34
+
+Group1.groupID = p
+
+## Message creation parameters
+# How many event generators
+Events.nrof = 1
+# Class of the first event generator
+Events1.class = MessageEventGenerator
+# (following settings are specific for the MessageEventGenerator class)
+#消息生成的时间间隔，（在100～100秒之间生成一个消息）
+Events1.interval = 100,100
+
+# 消息大小 (1k - 1k)
+Events1.size = 1k,1k
+# range of message source/destination addresses
+Events1.hosts = 20,25
+Events1.tohosts = 26,30
+
+
+
+
+# 消息ID前缀
+Events1.prefix = M
+
+MovementModel.rngSeed = 1
+#仿真world的大小(meters)，两个由逗号分开的数值：width，height，默认的是4500，3400
+MovementModel.worldSize =38000, 65000
+ #仿真热身时间设置，仿真开始时，容易产生失真，放弃前1000s的数据
+MovementModel.warmup = 1000
+
+Report.nrofReports = 1
+# length of the warm up period (simulated seconds)
+#Report.warmup = 0
+# default directory of reports (can be overridden per Report with output setting)
+Report.reportDir = reports/
+# Report classes to load
+Report.report1 = MessageStatsReport
+
+## Optimization settings -- these affect the speed of the simulation
+## see World class for details.
+Optimization.cellSizeMult = 5
+Optimization.randomizeUpdateOrder = true
