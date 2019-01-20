@@ -8,6 +8,7 @@ import java.util.Random;
 
 import core.Settings;
 import core.SettingsError;
+import guologutils.GuoLog;
 
 /**
  * Message creation -external events generator. Creates uniformly distributed
@@ -83,6 +84,8 @@ public class MessageEventGenerator implements EventQueue {
 		else {
 			this.msgTime = null;
 		}
+		
+		//System.out.println(s.contains(TO_HOST_RANGE_S));
 		if (s.contains(TO_HOST_RANGE_S)) {
 			this.toHostRange = s.getCsvInts(TO_HOST_RANGE_S, 2);
 		}

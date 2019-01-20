@@ -4,67 +4,83 @@
  */
 package movement;
 
-import input.ExternalMovementReader;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import util.Tuple;
-
 import core.Coord;
 import core.DTNSim;
 import core.Settings;
 import core.SimClock;
+import guologutils.GuoLog;
+import input.ExternalMovementReader;
+import util.Tuple;
 
 /**
  * Movement model that uses external data of node locations.
  */
 public class ExternalMovement extends MovementModel {
 	/** Namespace for settings */
+    //命名空间
 	public static final String EXTERNAL_MOVEMENT_NS = "ExternalMovement";
 	/** external locations file's path -setting id ({@value})*/
+	//外部坐标文件路径
 	public static final String MOVEMENT_FILE_S = "file";
 	/** number of preloaded intervals per preload run -setting id ({@value})*/
 	public static final String NROF_PRELOAD_S = "nrofPreload";
 
 	/** default initial location for excess nodes */
+	//默认初始化位置
 	private static final Coord DEF_INIT_LOC = new Coord(0,0);
 	private static ExternalMovementReader reader;
 	private static String inputFileName;
 
+	
 	/** mapping of external id to movement model */
+	//外部id与移动模型的映射mapping
 	private static Map<String, ExternalMovement> idMapping;
 	/** initial locations for nodes */
+	//节点的初始化位置
 	private static List<Tuple<String, Coord>> initLocations;
 	/** time of the very first location data */
+	//第一个位置数据的时间，即外部节点坐标数据集的第一个(最小的)时间戳
 	private static double initTime;
 	/** sampling interval (seconds) of the location data */
+	//位置数据的采样间隔
 	private static double samplingInterval;
 	/** last read time stamp after preloading */
+	//预加载之后，最新读取时间
 	private static double lastPreloadTime;
 	/** how many time intervals to load on every preload run */
+	//预加载时间之间的间隔
 	private static double nrofPreload = 10;
 	/** minimum number intervals that should be preloaded ahead of sim time */
+	//在仿真时间之前，预加载的最小时间间隔
 	private static final double MIN_AHEAD_INTERVALS = 2;
 
 	/** the very first location of the node */
+	//节点的初始化位置
 	private Coord intialLocation;
 	/** queue of path-start-time, path tuples */
 	private Queue<Tuple<Double, Path>> pathQueue;
 
 	/** when was the path currently under construction started */
+	//当前的path构造的时间
 	private double latestPathStartTime;
 	/** the last location of path waypoint */
+	//最新的路径点的位置坐标
 	private Coord latestLocation;
 	/** the path currently under construction */
+	//最新的path对象
 	private Path latestPath;
 
 	/** is this node active */
+	//判断节点书是否处于活跃状态
 	private boolean isActive;
-
+   /**节点所在的路径id*/
+	private Integer routId;
 	static {
 		DTNSim.registerForReset(ExternalMovement.class.getCanonicalName());
 		reset();
@@ -75,15 +91,15 @@ public class ExternalMovement extends MovementModel {
 	 * @param settings Where settings are read from
 	 */
 	public ExternalMovement(Settings settings) {
-		super(settings);
 
+		super(settings);
 		if (idMapping == null) {
 			// run these the first time object is created or after reset call
 			Settings s = new Settings(EXTERNAL_MOVEMENT_NS);
 			idMapping = new HashMap<String, ExternalMovement>();
 			inputFileName = s.getSetting(MOVEMENT_FILE_S);
 			reader = new ExternalMovementReader(inputFileName);
-
+			//保存了仿真时间的0时刻所有可用节点的初始位置 [984:(7258.00,26128.00), 1121:(15516.00,38476.00),。。。]
 			initLocations = reader.readNextMovements();
 			initTime = reader.getLastTimeStamp();
 			samplingInterval = -1;
@@ -273,5 +289,13 @@ public class ExternalMovement extends MovementModel {
 	public static void reset() {
 		idMapping = null;
 	}
+/*-------------begin-------------*/
+    public static Map<String, ExternalMovement> getIdMapping() {
+        return idMapping;
+    }
+/*-------------end-------------*/
+
+
+	
 
 }

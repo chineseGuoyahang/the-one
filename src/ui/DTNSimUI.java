@@ -18,6 +18,7 @@ import core.SimError;
 import core.SimScenario;
 import core.UpdateListener;
 import core.World;
+import guoDEBUG.DebugIdmapping;
 
 /**
  * Abstract superclass for user interfaces; contains also some simulation
@@ -100,9 +101,7 @@ public abstract class DTNSimUI {
 					c.setTime(-warmupTime);
 				}
 			}
-			
 			this.scen = SimScenario.getInstance();
-
 			// add reports
 			for (int i=1, n = settings.getInt(NROF_REPORT_S); i<=n; i++){
 				String reportClass = settings.getSetting(REPORT_S + i);

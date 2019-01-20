@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import guologutils.GuoLog;
 import movement.MovementModel;
 import movement.Path;
 import routing.MessageRouter;
@@ -339,6 +340,9 @@ public class DTNHost implements Comparable<DTNHost> {
 	 * @param simulateConnections Should network layer be updated too
 	 */
 	public void update(boolean simulateConnections) {
+
+
+	    
 		if (!isRadioActive()) {
 			// Make sure inactive nodes don't have connections
 			tearDownAllConnections();
@@ -397,6 +401,13 @@ public class DTNHost implements Comparable<DTNHost> {
 		distance = this.location.distance(this.destination);
 
 		while (possibleMovement >= distance) {
+		     /*---begin ¹ùÑÇº½--*/
+//		    if( this.address == 3 ) {
+//		         String guoMessage = this.destination+" ";
+//		         GuoLog.log(guoMessage);   
+//		    }
+	        /*---end ¹ùÑÇº½--*/
+	        
 			// node can move past its next destination
 			this.location.setLocation(this.destination); // snap to destination
 			possibleMovement -= distance;
@@ -412,6 +423,8 @@ public class DTNHost implements Comparable<DTNHost> {
 		dy = (possibleMovement/distance) * (this.destination.getY() -
 				this.location.getY());
 		this.location.translate(dx, dy);
+		
+
 	}
 
 	/**
@@ -544,5 +557,11 @@ public class DTNHost implements Comparable<DTNHost> {
 	public int compareTo(DTNHost h) {
 		return this.getAddress() - h.getAddress();
 	}
+/*------------begin--------------*/
+    public MovementModel getMovement() {
+        return movement;
+    }
+/*------------end--------------*/
+
 
 }

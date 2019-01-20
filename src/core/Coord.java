@@ -11,6 +11,7 @@ package core;
 public class Coord implements Cloneable, Comparable<Coord> {
 	private double x;
 	private double y;
+	private int routeId;
 
 	/**
 	 * Constructor.
@@ -20,7 +21,18 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	public Coord(double x, double y) {
 		setLocation(x,y);
 	}
+   public Coord(double x, double y,int routeId) {
+        setLocation(x,y);
+        setRouteId(routeId);
+    }
 
+    public void setRouteId(int routeId){
+        this.routeId = routeId;
+    }
+
+    public int getRouteId(){
+        return this.routeId;
+    }
 	/**
 	 * Sets the location of this coordinate object
 	 * @param x The x coordinate to set
@@ -40,7 +52,6 @@ public class Coord implements Cloneable, Comparable<Coord> {
 		this.x = c.x;
 		this.y = c.y;
 	}
-
 	/**
 	 * Moves the point by dx and dy
 	 * @param dx How much to move the point in X-direction
@@ -84,7 +95,7 @@ public class Coord implements Cloneable, Comparable<Coord> {
 	 * @return a text representation of the coordinate
 	 */
 	public String toString() {
-		return String.format("(%.2f,%.2f)",x,y);
+		return String.format("(%.2f,%.2f,%d)",x,y,routeId);
 	}
 
 	/**

@@ -76,6 +76,7 @@ public abstract class MovementModel {
 	 * @param min The minimum setting
 	 * @param max The maximum setting
 	 */
+	//最小速度与最大速度都必须大于0，并且最大速度大于最小速度
 	private static void checkMinAndMaxSetting(String name,
 		double min, double max) {
 		if (min < 0 || max < 0) {
@@ -155,6 +156,7 @@ public abstract class MovementModel {
 	 * Returns the largest X coordinate value this model uses
 	 * @return Maximum of X coordinate values
 	 */
+	//返回此模型使用的最大X坐标
 	public int getMaxX() {
 		return this.maxX;
 	}
@@ -163,6 +165,7 @@ public abstract class MovementModel {
 	 * Returns the largest Y coordinate value this model uses
 	 * @return Maximum of Y coordinate values
 	 */
+	//返回此模型使用的最大Y坐标
 	public int getMaxY() {
 		return this.maxY;
 	}
@@ -173,6 +176,7 @@ public abstract class MovementModel {
 	 * {@link #WAIT_TIME} setting.
 	 * @return A new speed between min and max values
 	 */
+	//返回一个速度，min < v < max
 	protected double generateSpeed() {
 		if (rng == null) {
 			return 1;
@@ -186,6 +190,7 @@ public abstract class MovementModel {
 	 * {@link #WAIT_TIME} setting).
 	 * @return The time as a double
 	 */
+	//返回一个等待时间，min < waitTime < max
 	protected double generateWaitTime() {
 		if (rng == null) {
 			return 0;
@@ -237,6 +242,7 @@ public abstract class MovementModel {
 	 * returns a random time in future that is {@link #WAIT_TIME} from now.
 	 * @return The sim time when node should ask the next time for a path
 	 */
+	//返回一个时间，当前仿真时间+需要等待的时间=下一次请求路径的时间
 	public double nextPathAvailable() {
 		return SimClock.getTime() + generateWaitTime();
 	}
@@ -245,6 +251,7 @@ public abstract class MovementModel {
 	 * Sets the module communication bus for this movement model
 	 * @param comBus The communications bus to set
 	 */
+	//设置此移动模型的模块通信总线
 	public void setComBus(ModuleCommunicationBus comBus) {
 		this.comBus = comBus;
 	}

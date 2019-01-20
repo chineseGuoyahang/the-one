@@ -166,7 +166,6 @@ public class SimScenario implements Serializable {
 		this.worldSizeY = worldSize[1];
 	//创建主机
 		createHosts();
-
 		this.world = new World(hosts, worldSizeX, worldSizeY, updateInterval,
 				updateListeners, simulateConnections,
 				eqHandler.getEventQueues());
@@ -339,6 +338,7 @@ public class SimScenario implements Serializable {
 
 			// creates prototypes of MessageRouter and MovementModel
 		//创建移动模块对象
+			
 			MovementModel mmProto =
 				(MovementModel)s.createIntializedObject(MM_PACKAGE +
 						s.getSetting(MOVEMENT_MODEL_S));

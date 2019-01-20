@@ -4,6 +4,7 @@
  */
 package core;
 import gui.DTNSimGUI;
+import guologutils.GuoLog;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

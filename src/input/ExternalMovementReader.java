@@ -56,8 +56,9 @@ public class ExternalMovementReader {
 	 * @param inFilePath Path to the file where the data is read
 	 * @throws SettingsError if the file wasn't found
 	 */
+	//构造函数,创建一个新的读取器用于从文件中读取数据
 	public ExternalMovementReader(String inFilePath) {
-		this.normalize = true;
+	    this.normalize = true;
 		File inFile = new File(inFilePath);
 		try {
 			scanner = new Scanner(inFile);
@@ -95,6 +96,7 @@ public class ExternalMovementReader {
 
 	/**
 	 * Reads all new id-coordinate tuples that belong to the same time instance
+	 * 读取属于同时间的 所有新id-坐标元组
 	 * @return A list of tuples or empty list if there were no more moves
 	 * @throws SettingError if an invalid line was read
 	 */
@@ -109,6 +111,7 @@ public class ExternalMovementReader {
 		Scanner lineScan = new Scanner(lastLine);
 		double time = lineScan.nextDouble();
 		String id = lineScan.next();
+		int routeId = lineScan.nextInt();//add the routeId by SB
 		double x = lineScan.nextDouble();
 		double y = lineScan.nextDouble();
 
@@ -119,7 +122,6 @@ public class ExternalMovementReader {
 		}
 
 		lastTimeStamp = time;
-
 		while (scanner.hasNextLine() && lastTimeStamp == time) {
 			lastLine = scanner.nextLine();
 
@@ -129,13 +131,14 @@ public class ExternalMovementReader {
 			}
 
 			// add previous line's tuple
-			moves.add(new Tuple<String, Coord>(id, new Coord(x,y)));
+			moves.add(new Tuple<String, Coord>(id, new Coord(x,y,routeId)));
 
 			lineScan = new Scanner(lastLine);
 
 			try {
 				time = lineScan.nextDouble();
 				id = lineScan.next();
+				routeId = lineScan.nextInt(); //add the routeId by SB
 				x = lineScan.nextDouble();
 				y = lineScan.nextDouble();
 			} catch (Exception e) {
@@ -150,7 +153,7 @@ public class ExternalMovementReader {
 		}
 
 		if (!scanner.hasNextLine()) {	// add the last tuple of the file
-			moves.add(new Tuple<String, Coord>(id, new Coord(x,y)));
+			moves.add(new Tuple<String, Coord>(id, new Coord(x,y,routeId)));
 		}
 
 		return moves;
